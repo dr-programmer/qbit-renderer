@@ -52,6 +52,25 @@ struct matrix *convert_2dc_3dr(vector *v) {
     return result;
 }
 
+vector *vector_cross_product(const vector * const v1, const vector * const v2) {
+    if(!v1 || !v2) return NULL;
+
+    float sqrt2 = sqrt(2);
+
+    float ax = v1->fields[1][0].real * sqrt2;
+    float ay = v1->fields[0][0].real - v1->fields[1][0].real - v1->fields[1][0].imaginary;
+    float az = v1->fields[1][0].imaginary * sqrt2;
+
+    float bx = v2->fields[1][0].real * sqrt2;
+    float by = v2->fields[0][0].real - v2->fields[1][0].real - v2->fields[1][0].imaginary;
+    float bz = v2->fields[1][0].imaginary * sqrt2;
+
+    return vector_create_init(
+        complex_create(fabs((ax*by+ay*bx+ay*bz+az*by)/sqrt2 + az*bx), 0), 
+        complex_create((ay*bz-az*by)/sqrt2 + ax*bz, (ax*by-ay*bx)/sqrt2)
+    );
+}
+
 int main() {
 
 smart_allocation_global_turn_off = 1;
@@ -66,6 +85,17 @@ S
         matrix_mul(quantum_gate_create_hadamard(), qubit_create_init(c_1, c_0))
     };
     for(unsigned int i = 0; i < 3; i++) P(points[i]);
+
+    matrix_print(points[0]);
+    printf("x\n");
+    matrix_print(points[1]);
+    printf("=\n");
+    vector *test_cross = vector_cross_product(points[0], points[1]);
+    matrix_print(test_cross);
+    printf("=>\n");
+    struct matrix *test = convert_2dc_3dr(test_cross);
+    matrix_print(test);
+
     E
 
     for(unsigned int i = 0; i < 3; i++) {
