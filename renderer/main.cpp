@@ -80,9 +80,9 @@ S
     struct complex c_0 = complex_create(0, 0);
     struct complex c_1 = complex_create(1, 0);
     qubit *points[3] = {
-        qubit_create_init(c_1, c_0), 
+        qubit_create_init(complex_create(1/sqrt(2), 0), complex_create(-1/sqrt(2), -1/sqrt(2))), 
         qubit_create_init(complex_create(1/sqrt(2), 0), complex_create(0, -1/sqrt(2))), 
-        matrix_mul(quantum_gate_create_hadamard(), qubit_create_init(c_1, c_0))
+        qubit_create_init(c_1, complex_create(0, -1/sqrt(2)))
     };
     for(unsigned int i = 0; i < 3; i++) P(points[i]);
 
@@ -99,6 +99,7 @@ S
     E
 
     for(unsigned int i = 0; i < 3; i++) {
+        S
         printf("\n");
         matrix_print(points[i]);
 
@@ -108,7 +109,12 @@ S
                     coords_3d->fields[0][0].real, 
                     coords_3d->fields[1][0].real, 
                     coords_3d->fields[2][0].real);
+        E
     }
+
+    matrix_print(matrix_sub(convert_2dc_3dr(points[0]), convert_2dc_3dr(points[1])));
+    matrix_print(matrix_sub(points[0], points[1]));
+    matrix_print(convert_2dc_3dr(matrix_add(points[0], points[1])));
 
     vector *normal = vector_create_init(complex_create(1/sqrt(2), 0), complex_create(0, 1/sqrt(2)));
 
@@ -143,22 +149,55 @@ S
             // qm->fields[0][0].real /= length;
             // qm->fields[1][0].real /= length;
 
-            float scale_factor = fabs(
-                vector_inner_product(points[0], normal).real 
-                    / vector_inner_product(qm, normal).real
-            );
+            // float scale_factor = fabs(
+            //     vector_inner_product(points[0], normal).real 
+            //         / vector_inner_product(qm, normal).real
+            // );
 
-            qm->fields[0][0].real *= scale_factor;
-            qm->fields[1][0].real *= scale_factor;
-            qm->fields[1][0].imaginary *= scale_factor;
+            // qm->fields[0][0].real *= scale_factor;
+            // qm->fields[1][0].real *= scale_factor;
+            // qm->fields[1][0].imaginary *= scale_factor;
+
+            // qm checking
+            // vector *conv = convert_2dc_3dr(qm);
+            // matrix_print(qm);
+            // printf("x: %f, y: %f, z: %f \n", 
+            //         conv->fields[0][0].real, 
+            //         conv->fields[1][0].real, 
+            //         conv->fields[2][0].real);
 
             vector *x_check = matrix_mul(quantum_gate_create_hadamard(), qm);
 
             bool isIn = true;
-            if(pow(qm->fields[0][0].real, 2) - pow(qm->fields[1][0].real, 2) 
-                    < points[0]->fields[0][0].real 
-                && pow(x_check->fields[0][0].real, 2) - pow(x_check->fields[1][0].real, 2) 
-                    < points[0]->fields[0][0].real) isIn = false;
+            // if(pow(qm->fields[0][0].real, 2) - pow(qm->fields[1][0].real, 2) 
+            //         < points[0]->fields[0][0].real 
+            //     && pow(x_check->fields[0][0].real, 2) - pow(x_check->fields[1][0].real, 2) 
+            //         < points[0]->fields[0][0].real) isIn = false;
+
+            S
+            for(unsigned int i = 0; i < 3; i++) {
+                unsigned int tail = i;
+                unsigned int head = (i + 1) % 3;
+                vector *temp = vector_cross_product(
+                    matrix_sub(points[head], points[tail]), 
+                    matrix_sub(qm, points[tail])
+                );
+
+                // vector *conv = convert_2dc_3dr(temp);
+                // matrix_print(temp);
+                // printf("x: %f, y: %f, z: %f \n", 
+                //         conv->fields[0][0].real, 
+                //         conv->fields[1][0].real, 
+                //         conv->fields[2][0].real);
+
+                struct complex checkSum = vector_inner_product(temp, normal);
+
+                if(checkSum.real < 0) {
+                    isIn = false;
+                    break;
+                }
+            }
+            E
 
             int x_color = 0;
             int z_color = 0;
