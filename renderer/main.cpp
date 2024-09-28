@@ -17,19 +17,19 @@ static const int maxColorComponent = 255;
 struct matrix *convert_2dc_3dr(vector *v) {
     if(!v) return NULL;
 
-    float y = pow(complex_get_absolute(v->fields[0][0]), 2) 
-                    - pow(complex_get_absolute(v->fields[1][0]), 2);
-    float x_sign = complex_get_absolute(v->fields[1][0]) != 0 
-                    ? (v->fields[1][0].real 
-                        / complex_get_absolute(v->fields[1][0])) 
+    float y = pow(complex_get_absolute(INDEX(v, 0, 0)), 2) 
+                    - pow(complex_get_absolute(INDEX(v, 1, 0)), 2);
+    float x_sign = complex_get_absolute(INDEX(v, 1, 0)) != 0 
+                    ? (INDEX(v, 1, 0).real 
+                        / complex_get_absolute(INDEX(v, 1, 0))) 
                     : 0;
-    float sin_phi = (pow(complex_get_absolute(v->fields[0][0]), 2) 
-                        + pow(complex_get_absolute(v->fields[1][0]), 2)) 
+    float sin_phi = (pow(complex_get_absolute(INDEX(v, 0, 0)), 2) 
+                        + pow(complex_get_absolute(INDEX(v, 1, 0)), 2)) 
                     * x_sign;
     float x = sqrt(1 - pow(y, 2)) * sin_phi;
-    float z_sign = complex_get_absolute(v->fields[1][0]) != 0 
-                    ? (v->fields[1][0].imaginary 
-                        / complex_get_absolute(v->fields[1][0])) 
+    float z_sign = complex_get_absolute(INDEX(v, 1, 0)) != 0 
+                    ? (INDEX(v, 1, 0).imaginary 
+                        / complex_get_absolute(INDEX(v, 1, 0))) 
                     : 0;
     float z = 1 - pow(sin_phi, 2) == 1 
                 ? sqrt(1 - pow(y, 2)) * sqrt(1 - pow(sin_phi, 2)) * z_sign 
@@ -45,9 +45,9 @@ struct matrix *convert_2dc_3dr(vector *v) {
 
     struct matrix *result = matrix_create_empty(3, 1);
 
-    result->fields[0][0].real = x;
-    result->fields[1][0].real = y;
-    result->fields[2][0].real = z;
+    INDEX(result, 0, 0).real = x;
+    INDEX(result, 1, 0).real = y;
+    INDEX(result, 2, 0).real = z;
 
     return result;
 }
@@ -57,13 +57,13 @@ vector *vector_cross_product(const vector * const v1, const vector * const v2) {
 
     float sqrt2 = sqrt(2);
 
-    float ax = v1->fields[1][0].real * sqrt2;
-    float ay = v1->fields[0][0].real - v1->fields[1][0].real - v1->fields[1][0].imaginary;
-    float az = v1->fields[1][0].imaginary * sqrt2;
+    float ax = INDEX(v1, 1, 0).real * sqrt2;
+    float ay = INDEX(v1, 0, 0).real - INDEX(v1, 1, 0).real - INDEX(v1, 1, 0).imaginary;
+    float az = INDEX(v1, 1, 0).imaginary * sqrt2;
 
-    float bx = v2->fields[1][0].real * sqrt2;
-    float by = v2->fields[0][0].real - v2->fields[1][0].real - v2->fields[1][0].imaginary;
-    float bz = v2->fields[1][0].imaginary * sqrt2;
+    float bx = INDEX(v2, 1, 0).real * sqrt2;
+    float by = INDEX(v2, 0, 0).real - INDEX(v2, 1, 0).real - INDEX(v2, 1, 0).imaginary;
+    float bz = INDEX(v2, 1, 0).imaginary * sqrt2;
 
     return vector_create_init(
         complex_create(fabs((ax*by+ay*bx+ay*bz+az*by)/sqrt2 + az*bx), 0), 
@@ -106,9 +106,9 @@ S
         struct matrix *coords_3d = convert_2dc_3dr(points[i]);
 
         printf("x: %f, y: %f, z: %f \n", 
-                    coords_3d->fields[0][0].real, 
-                    coords_3d->fields[1][0].real, 
-                    coords_3d->fields[2][0].real);
+                    INDEX(coords_3d, 0, 0).real, 
+                    INDEX(coords_3d, 1, 0).real, 
+                    INDEX(coords_3d, 2, 0).real);
         E
     }
 
